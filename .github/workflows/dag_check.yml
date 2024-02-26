@@ -1,0 +1,37 @@
+name: DAG Top-Level Code Check
+
+on:
+  pull_request:
+    branches:
+      - Master
+
+jobs:
+  check_dags:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Run Check
+      id: dag_check
+      run: |
+        python dag_check_script.py
+
+    - name: Set Check Result
+      if: ${{ always() }}
+      run: echo "::set-output name=dag_has_top_level_code::${{ steps.dag_check.outputs.has_top_level_code }}"
+
+  report_results:
+    needs: check_dags
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Display Results
+      if: ${{ needs.check_dags.result == 'success' }}
+      run: |
+        if [ "${{ needs.check_dags.outputs.dag_has_top_level_code }}" = "true" ]; then
+          echo "Top-level code found in DAGs folder."
+        else
+          echo "No top-level code found in DAGs folder."
+        fi

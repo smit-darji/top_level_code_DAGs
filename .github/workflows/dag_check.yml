@@ -20,7 +20,7 @@ jobs:
       
       - name: Get list of Added files
         id: set-added-files
-        run: echo addedfiles=$(git diff --name-only --diff-filter=ACRT origin/${{ github.event.pull_request.base.ref }} HEAD | uniq  | jq -R -s -c 'split("\n")[:-1]' | jq -r '.[] | ("./" + .)') >>$GITHUB_OUTPUT
+        run: echo addedfiles=$(git diff --name-only --diff-filter=ACRT origin/${{ github.event.pull_request.base.ref }} HEAD | uniq | grep "^dags/" | jq -R -s -c 'split("\n")[:-1]' | jq -r '.[] | ("./" + .)') >>$GITHUB_OUTPUT
       
       - name: Print files to be validated
         run: |

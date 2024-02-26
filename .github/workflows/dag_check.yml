@@ -44,9 +44,6 @@ jobs:
         env:
           addedfiles: ${{ needs.addedFilesList.outputs.addedfiles }}
         run: |
-
           added_files_str="${{ env.addedfiles }}"
-          files=($added_files_str)
-          for file in "${files[@]}"; do
-            python analyze_dags.py "$file"
-          done
+          python analyze_dags.py $added_files_str >> analyze_result.txt
+          cat analyze_result.txt

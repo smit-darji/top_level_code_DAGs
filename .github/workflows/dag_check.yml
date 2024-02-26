@@ -21,7 +21,7 @@ jobs:
 
     - name: Analyze DAG Files
       run: |
-        python top_level_code_DAGs/analyze_dags.py
+        python analyze_dags.py
       working-directory: ${{ github.workspace }}
       id: analyze
 

@@ -1,9 +1,6 @@
 name: Top-Level Code Check
 
 on:
-  push:
-    branches:
-      - dev
   pull_request:
     branches:
       - Master

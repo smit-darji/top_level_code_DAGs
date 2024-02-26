@@ -6,6 +6,7 @@ on:
       - Master
 
 
+
 jobs:
   analyze_dag_files:
     runs-on: ubuntu-latest
@@ -21,24 +22,33 @@ jobs:
       with:
         python-version: '3.x'
 
+    - name: Get Changed Files
+      id: changed_files
+      run: |
+        git diff --name-only ${{ github.event.pull_request.base.sha }} >> changed_files.txt
+
+    - name: Filter DAG Files
+      id: dag_files
+      run: |
+        grep "dag/" changed_files.txt >> dag_files.txt || true
+
     - name: Analyze DAG Files
       id: analyze
       run: |
-        git diff --name-only ${{ github.event.pull_request.base.sha }} >> analyze_output.txt
-        python analyze_dags.py $(cat analyze_output.txt)
-    
+        python analyze_dags.py $(cat dag_files.txt)
+
     - name: Top-level File Validation
       id: validation
-      if: steps.analyze.outputs.stdout != '' # Only run if there are added files
+      if: steps.dag_files.outputs.stdout != '' # Only run if there are DAG files
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        cat analyze_output.txt  # Display the content of analyze_output.txt for debugging
-        # Parse analyze_output.txt to extract added files
-        added_files=$(cat analyze_output.txt)
-        # Add static note comment for each added file
-        for file in $added_files; do
-          echo "Adding comment for added file: $file"
-          # Add a static note comment for the added file
-          gh pr comment "$(gh pr view --json title --jq '.title' | tr -d '\n')" --body "The file $file was added. Please ensure it follows the naming convention."
+        cat dag_files.txt  # Display the content of dag_files.txt for debugging
+        # Parse dag_files.txt to extract DAG filenames
+        dag_files=$(cat dag_files.txt)
+        # Add static note comment for each DAG file
+        for file in $dag_files; do
+          echo "Adding comment for DAG file: $file"
+          # Add a static note comment for the DAG file
+          gh pr comment "$(gh pr view --json title --jq '.title' | tr -d '\n')" --body "Analyzing DAG file: $file."
         done

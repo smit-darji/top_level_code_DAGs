@@ -8,22 +8,17 @@ on:
 jobs:
   changedFilesList:
     runs-on: ubuntu-latest
+    outputs:
+      added_files: ${{ steps.get-added-files.outputs.added_files }}
     steps:
       - name: Clone Repository
         uses: actions/checkout@v2
 
-      - name: Get main branch
-        run: |
-          echo "main_branch=${{ github.event.pull_request.base.ref }}" >> $GITHUB_ENV
-          git fetch --no-tags --prune --depth=1 origin +refs/heads/${{ github.event.pull_request.base.ref }}:refs/remotes/origin/${{ github.event.pull_request.base.ref }}
-
       - name: Get list of newly added files
+        id: get-added-files
         run: |
-          added_files=$(git diff --name-only --diff-filter=A origin/${{ github.event.pull_request.base.ref }} HEAD | uniq | jq -R -s -c 'split("\n")[:-1]' | jq -r '.[] | ("./" + .)')
-          echo "added_files=$added_files" >> $GITHUB_ENV
-      - name: list of newly added files
-        run: |
-          echo "added_files=$added_files" >> $GITHUB_ENV
+          added_files=$(git diff --name-only --diff-filter=A origin/${{ github.event.pull_request.base.ref }} HEAD | grep "^dags/" | jq -R -s -c 'split("\n")[:-1]' | jq -r '.[] | ("./" + .)')
+          echo "::set-output name=added_files::$added_files"
 
   analyze_dag_files:
     runs-on: ubuntu-latest
@@ -40,10 +35,11 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Analyze DAG Files
+      - name: Print File Names
         run: |
-          changed_files="${{ env.added_files }}"
-          if [ -z "$changed_files" ]; then
-            changed_files=()
-          fi
-          echo "changed_files=$changed_files" >> $GITHUB_ENV
+          added_files="${{ needs.changedFilesList.outputs.added_files }}"
+          IFS=' ' read -ra files <<< "$added_files"
+          for file in "${files[@]}"; do
+            echo "Processing file: $file"
+            python analyze_dags.py "$file"
+          done

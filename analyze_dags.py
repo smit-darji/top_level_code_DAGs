@@ -16,4 +16,6 @@ def check_top_level_code(files):
         except SyntaxError:
             invalid_files.append(file_path)
             print(f"SyntaxError: Unable to parse {file_path}")
+    print("Valid files are: ", valid_files)
+    print("invalic files are: ", invalid_files)
     return valid_files, invalid_files

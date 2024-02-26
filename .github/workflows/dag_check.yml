@@ -46,7 +46,5 @@ jobs:
           invalid_files=()
           for file in "${files[@]}"; do
             echo "Processing file: $file"
-            python analyze_dags.py "$file" >> analyze_result.txt
+            python analyze_dags.py "$file"
           done
-
-          cat analyze_result.txt

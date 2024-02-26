@@ -5,19 +5,29 @@ on:
     branches:
       - Master
 
+
 jobs:
-  analyze_dag_file:
+  analyze_dag_files:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v2
 
-    - name: Check DAG File for Top-Level Code
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Analyze DAG Files
       run: |
-        if grep -q "^[^ ]" dags/top_level_code_check.py; then
-          echo "DAG file contains top-level code. Failing workflow."
-          exit 1
-        else
-          echo "DAG file does not contain top-level code. Workflow passed."
-        fi
+        python top_level_code_check/analyze_dags.py
+      working-directory: ${{ github.workspace }}
+      id: analyze
+
+  display_results:
+    needs: analyze_dag_files
+    runs-on: ubuntu-latest
+    steps:
+    - name: Display Results
+      run: echo "${{ steps.analyze.outputs.stdout }}"

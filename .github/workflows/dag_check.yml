@@ -11,8 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
+    - name: Checkout Pull Request
       uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.sha }} # Checkout the head of the pull request
 
     - name: Set up Python
       uses: actions/setup-python@v2
@@ -22,12 +24,21 @@ jobs:
     - name: Analyze DAG Files
       id: analyze
       run: |
-        python analyze_dags.py >> analyze_output.txt
-
+        git diff --name-only ${{ github.event.pull_request.base.sha }} >> analyze_output.txt
+        python analyze_dags.py $(cat analyze_output.txt)
     
     - name: Top-level File Validation
       id: validation
+      if: steps.analyze.outputs.stdout != '' # Only run if there are added files
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cat analyze_output.txt  # Display the content of analyze_output.txt for debugging
+        # Parse analyze_output.txt to extract added files
+        added_files=$(cat analyze_output.txt)
+        # Add static note comment for each added file
+        for file in $added_files; do
+          echo "Adding comment for added file: $file"
+          # Add a static note comment for the added file
+          gh pr comment "$(gh pr view --json title --jq '.title' | tr -d '\n')" --body "The file $file was added. Please ensure it follows the naming convention."
+        done

@@ -29,9 +29,6 @@ if __name__ == "__main__":
 
     # Print valid and invalid filenames
     print("Valid files without top-level code:")
-    for file in valid_files:
-        print(file)
-
+    print(valid_files)
     print("\nInvalid files with top-level code:")
-    for file in invalid_files:
-        print(file)
+    print(invalid_files)

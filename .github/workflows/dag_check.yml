@@ -20,7 +20,7 @@ jobs:
       
       - name: Get list of changed files
         id: set-changed-files
-        run: echo changedfiles=$(git diff --name-only --diff-filter=ACMRT origin/${{ github.event.pull_request.base.ref }} HEAD | uniq  | jq -R -s -c 'split("\n")[:-1]' | jq -r '.[] | ("./" + .)') >>$GITHUB_OUTPUT
+        run: echo changedfiles=$(git diff --name-only --diff-filter=ACRT origin/${{ github.event.pull_request.base.ref }} HEAD | uniq  | jq -R -s -c 'split("\n")[:-1]' | jq -r '.[] | ("./" + .)') >>$GITHUB_OUTPUT
       
       - name: Print files to be validated
         run: echo "${{steps.set-changed-files.outputs.changedfiles}}"

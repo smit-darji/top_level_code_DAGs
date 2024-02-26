@@ -7,19 +7,24 @@ on:
 
 
 jobs:
-  addedFilesList:
+  addedFilesList: # Job that list changed files
     runs-on: ubuntu-latest
     outputs:
-      addedfiles: ${{ steps.set-added-files.outputs.addedfiles }}
+      addedfiles: ${{ steps.set-added-files.outputs.addedfiles }} # generate output names addedfiles by using inner step output
     steps:
-      - name: Clone Repository
-        uses: actions/checkout@v2
+      - name: Clone Repo
+        uses: actions/checkout@v4
 
-      - name: Get list of newly added files
+      - name: Get main branch
+        run: git fetch --no-tags --prune --depth=1 origin +refs/heads/${{ github.event.pull_request.base.ref }}:refs/remotes/origin/${{ github.event.pull_request.base.ref }}
+      
+      - name: Get list of Added files
         id: set-added-files
+        run: echo addedfiles=$(git diff --name-only --diff-filter=ACRT origin/${{ github.event.pull_request.base.ref }} HEAD | uniq  | jq -R -s -c 'split("\n")[:-1]' | jq -r '.[] | ("./" + .)') >>$GITHUB_OUTPUT
+      
+      - name: Print files to be validated
         run: |
-          added_files=$(git diff --name-only --diff-filter=A origin/${{ github.event.pull_request.base.ref }} HEAD | grep "^dags/" | jq -R -s -c 'split("\n")[:-1]' | jq -r '.[] | ("./" + .)')
-          echo "::set-output name=addedfiles::${added_files}"
+          echo "Files to be validated: ${{ steps.set-added-files.outputs.addedfiles }}"
 
   analyze_dag_files:
     runs-on: ubuntu-latest
@@ -35,16 +40,13 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Run Python script to analyze added files
-        id: run-python-script
+      - name: Print File Names
         env:
           addedfiles: ${{ needs.addedFilesList.outputs.addedfiles }}
         run: |
+
           added_files_str="${{ env.addedfiles }}"
           files=($added_files_str)
-          valid_files=()
-          invalid_files=()
           for file in "${files[@]}"; do
-            echo "Processing file: $file"
             python analyze_dags.py "$file"
           done

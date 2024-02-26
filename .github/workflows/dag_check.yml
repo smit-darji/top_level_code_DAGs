@@ -4,6 +4,8 @@ on:
   pull_request:
     branches:
       - Master
+
+
 jobs:
   analyze_dag_files:
     runs-on: ubuntu-latest
@@ -22,17 +24,19 @@ jobs:
       run: |
         python analyze_dags.py >> analyze_output.txt
 
-    - name: Top-level File validation
+    - name: Top-level File Validation
       id: validation
       env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Set the GH_TOKEN environment variable
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cat analyze_output.txt  # Display the content of analyze_output.txt for debugging
         # Parse analyze_output.txt to extract invalid filenames
         invalid_files=$(grep "Invalid files:" analyze_output.txt -A 100 | tail -n +2)
-        # Add note for each invalid file
+        # Add comment for each invalid file
         for file in $invalid_files; do
-          echo "Adding note for invalid file: $file"
+          echo "Adding comment for invalid file: $file"
+          # Extract the suggestion for fixing the filename
+          suggestion=$(echo "$file" | sed 's/\./_/' | sed 's/\(.*\)_\(.*\)/\2/')
           # Use GitHub CLI to add a comment to the pull request
-          gh pr comment "$(gh pr view --json title --jq '.title' | tr -d '\n')" --body "The file $file is invalid."
+          gh pr comment "$(gh pr view --json title --jq '.title' | tr -d '\n')" --body "The filename $file is invalid. Please fix the top-level code in the file named $suggestion."
         done

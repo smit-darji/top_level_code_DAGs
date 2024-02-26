@@ -48,16 +48,19 @@ jobs:
           files=($added_files_str)
           for file in "${files[@]}"; do
             echo "Processing file: $file"
-            python analyze_dags.py "$file"
+            python analyze_dags.py "$file" >> analyze_result.txt
           done
-  
-  result_of_pythonfile:
-    needs: analyze_dag_files
-    runs-on: ubuntu-latest
-    steps:
-      - name: Print result of Python file
+      - name: Result of Top-level Code
         run: |
-          # Add commands to print the result of the Python file processing here
-          # For example:
-          echo "Result of Python file processing:"
-          cat analyze_result.txt  # Assuming the Python script writes the result to a file named analyze_result.txt
+          cat analyze_result.txt
+  
+  # result_of_pythonfile:
+  #   needs: analyze_dag_files
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Print result of Python file
+  #       run: |
+  #         # Add commands to print the result of the Python file processing here
+  #         # For example:
+  #         echo "Result of Python file processing:"
+  #         cat analyze_result.txt  # Assuming the Python script writes the result to a file named analyze_result.txt

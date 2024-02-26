@@ -9,19 +9,18 @@ on:
       - Master
 
 jobs:
-  analyze_python_files:
+  analyze_dag_file:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-
-    - name: Analyze Python Files
+    - name: Check DAG File for Top-Level Code
       run: |
-        python top_level_code_check/dags/top_level_code_check.py
-      working-directory: ${{ github.workspace }}
+        if grep -q "^[^ ]" top_level_code_check/dags/top_level_code_check.py; then
+          echo "DAG file contains top-level code. Failing workflow."
+          exit 1
+        else
+          echo "DAG file does not contain top-level code. Workflow passed."
+        fi

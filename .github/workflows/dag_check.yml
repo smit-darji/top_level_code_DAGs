@@ -10,7 +10,7 @@ jobs:
   addedFilesList: # Job that list changed files
     runs-on: ubuntu-latest
     outputs:
-      addedfiles: ${{ steps.set-changed-files.outputs.addedfiles }} # generate output names addedfiles by using inner step output
+      addedfiles: ${{ steps.set-added-files.outputs.addedfiles }} # generate output names addedfiles by using inner step output
     steps:
       - name: Clone Repo
         uses: actions/checkout@v4
@@ -18,13 +18,13 @@ jobs:
       - name: Get main branch
         run: git fetch --no-tags --prune --depth=1 origin +refs/heads/${{ github.event.pull_request.base.ref }}:refs/remotes/origin/${{ github.event.pull_request.base.ref }}
       
-      - name: Get list of changed files
-        id: set-changed-files
+      - name: Get list of Added files
+        id: set-added-files
         run: echo addedfiles=$(git diff --name-only --diff-filter=ACRT origin/${{ github.event.pull_request.base.ref }} HEAD | uniq  | jq -R -s -c 'split("\n")[:-1]' | jq -r '.[] | ("./" + .)') >>$GITHUB_OUTPUT
       
       - name: Print files to be validated
         run: |
-          echo "Files to be validated: ${{ steps.set-changed-files.outputs.addedfiles }}"
+          echo "Files to be validated: ${{ steps.set-added-files.outputs.addedfiles }}"
 
   analyze_dag_files:
     runs-on: ubuntu-latest
@@ -42,12 +42,14 @@ jobs:
 
       - name: Print File Names
         env:
-          CHANGED_FILES: ${{ needs.addedFilesList.outputs.addedfiles }}
+          addedfiles: ${{ needs.addedFilesList.outputs.addedfiles }}
         run: |
-          changed_files="${{ env.addedfiles }}"
-          echo $changed_files
+          echo "start"
+          echo $addedfiles
+          added_files_str="${{ env.addedfiles }}"
+          echo $added_files_str
           echo "****************"
-          files=($changed_files) # Convert the string to an array
+          files=($added_files_str)
           echo "=================================================="
           echo $files
 

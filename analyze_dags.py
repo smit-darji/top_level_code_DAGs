@@ -2,6 +2,8 @@ import ast
 import sys
 
 def check_top_level_code(files):
+    print("in python ")
+    print(files)
     valid_files = []
     invalid_files = []
     for file_path in files:

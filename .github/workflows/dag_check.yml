@@ -3,7 +3,7 @@ name: Top-Level Code Check
 on:
   pull_request:
     branches:
-      - master
+      - Master
 
 jobs:
   analyze_dag_files:

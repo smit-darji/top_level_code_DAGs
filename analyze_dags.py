@@ -1,5 +1,6 @@
 import ast
 import os
+import json
 
 def check_top_level_code(directory):
     files_with_top_level_code = []
@@ -21,6 +22,5 @@ def check_top_level_code(directory):
 # Example usage:
 directory = "dags"
 files_with_top_level_code = check_top_level_code(directory)
-print("Files with top-level code:")
-for file in files_with_top_level_code:
-    print(file)
+result = {"files_with_top_level_code": files_with_top_level_code}
+print(json.dumps(result))

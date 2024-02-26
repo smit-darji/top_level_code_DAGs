@@ -19,28 +19,17 @@ jobs:
         python-version: '3.x'
 
     - name: Analyze DAG Files
-      run: |
-        python analyze_dags.py > analyze_output.txt
-      working-directory: ${{ github.workspace }}
       id: analyze
+      run: |
+        result=$(python analyze_dags.py)
+        echo "::set-output name=result::$result"
 
   display_results:
     needs: analyze_dag_files
     runs-on: ubuntu-latest
     steps:
-    - name: Read Analysis Output
-      id: read_analysis_output
-      run: echo "::set-output name=analysis_output::$(cat analyze_output.txt)"
-
     - name: Display Results
       run: |
-        analysis_output="${{ steps.read_analysis_output.outputs.analysis_output }}"
-        if [ -z "$analysis_output" ]; then
-          echo "No files found."
-        else
-          echo "Files without top-level code:"
-          grep "Files without top-level code:" <<< "$analysis_output"
-          echo ""
-          echo "Files with top-level code:"
-          grep "Files with top-level code:" <<< "$analysis_output"
-        fi
+        result="${{ needs.analyze.outputs.result }}"
+        echo "Result:"
+        echo "$result"

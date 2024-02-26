@@ -1,37 +1,27 @@
-name: DAG Top-Level Code Check
+name: Top-Level Code Check
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
-      - Master
+      - main
 
 jobs:
-  check_dags:
+  analyze_python_files:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v2
 
-    - name: Run Check
-      id: dag_check
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Analyze Python Files
       run: |
-        python dag_check_script.py
-
-    - name: Set Check Result
-      id: set_result
-      run: echo "::set-output name=dag_has_top_level_code::$(cat dag_check_result.txt)"
-
-  report_results:
-    needs: check_dags
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Display Results
-      if: ${{ needs.check_dags.result == 'success' }}
-      run: |
-        if [ "${{ steps.set_result.outputs.dag_has_top_level_code }}" = "true" ]; then
-          echo "Top-level code found in DAGs folder."
-        else
-          echo "No top-level code found in DAGs folder."
-        fi
+        python top_level_code_check/dags/top_level_code_check.py
+      working-directory: ${{ github.workspace }}

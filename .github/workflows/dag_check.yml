@@ -7,23 +7,25 @@ on:
 
 
 jobs:
-  changedFilesList: # Job that list changed files
+  changedFilesList:
     runs-on: ubuntu-latest
     outputs:
-      changedfiles: ${{ steps.set-changed-files.outputs.changedfiles }} # generate output names changedfiles by using inner step output
+      changedfiles: ${{ steps.set-changed-files.outputs.changedfiles }}
     steps:
-      - name: Clone Repo
-        uses: actions/checkout@v4
+      - name: Clone Repository
+        uses: actions/checkout@v2
 
       - name: Get main branch
         run: git fetch --no-tags --prune --depth=1 origin +refs/heads/${{ github.event.pull_request.base.ref }}:refs/remotes/origin/${{ github.event.pull_request.base.ref }}
       
       - name: Get list of changed files
         id: set-changed-files
-        run: echo changedfiles=$(git diff --name-only --diff-filter=ACRT origin/${{ github.event.pull_request.base.ref }} HEAD | uniq  | jq -R -s -c 'split("\n")[:-1]' | jq -r '.[] | ("./" + .)') >>$GITHUB_OUTPUT
+        run: |
+          changed_files=$(git diff --name-only --diff-filter=ACRT origin/${{ github.event.pull_request.base.ref }} HEAD | uniq | jq -R -s -c 'split("\n")[:-1]' | jq -r '.[] | ("./" + .)')
+          echo "changedfiles=$changed_files" >> $GITHUB_ENV
       
       - name: Print files to be validated
-        run: echo "${{steps.set-changed-files.outputs.changedfiles}}"
+        run: echo "Files to be validated: ${{ steps.set-changed-files.outputs.changedfiles }}"
 
   analyze_dag_files:
     runs-on: ubuntu-latest
@@ -42,8 +44,8 @@ jobs:
 
       - name: Print File Names
         run: |
-          added_files="${{ env.added_files }}"
-          IFS=' ' read -ra files <<< "$added_files"
+          changed_files="${{ env.changedfiles }}"
+          IFS=' ' read -ra files <<< "$changed_files"
           for file in "${files[@]}"; do
             echo "Processing file: $file"
             python analyze_dags.py "$file"

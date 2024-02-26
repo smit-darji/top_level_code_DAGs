@@ -3,7 +3,8 @@ name: Top-Level Code Check
 on:
   pull_request:
     branches:
-      - Master
+      - master
+
 jobs:
   analyze_dag_files:
     runs-on: ubuntu-latest
@@ -21,17 +22,13 @@ jobs:
       id: analyze
       run: |
         python analyze_dags.py >> analyze_output.txt
-        echo "********************"
-        cat analyze_output.txt
 
-  display_results:
-    needs: analyze_dag_files
-    runs-on: ubuntu-latest
-    steps:
-    - name: Display Results
+    - name: Top-level File validation
+      id: validation
       run: |
-        echo "Valid files with top-level code:"
-        grep "Valid files with top-level code:" analyze_output.txt -A 100 | tail -n +2
-        echo ""
-        echo "Invalid files:"
-        grep "Invalid files:" analyze_output.txt -A 100 | tail -n +2
+        cat analyze_output.txt
+        invalid_files=$(grep "Invalid files:" analyze_output.txt -A 100 | tail -n +2)
+        for file in $invalid_files; do
+          echo "Adding note for invalid file: $file"
+          gh pr comment "$(gh pr view --json title --jq '.title' | tr -d '\n')" --body "The file $file is invalid."
+        done

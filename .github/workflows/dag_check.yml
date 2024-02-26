@@ -5,6 +5,7 @@ on:
     branches:
       - Master
 
+
 jobs:
   changedFilesList:
     runs-on: ubuntu-latest

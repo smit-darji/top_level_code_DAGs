@@ -15,7 +15,7 @@ jobs:
 
     - name: Check DAG File for Top-Level Code
       run: |
-        if grep -q "^[^ ]" top_level_code_check/dags/top_level_code_check.py; then
+        if grep -q "^[^ ]" dags/top_level_code_check.py; then
           echo "DAG file contains top-level code. Failing workflow."
           exit 1
         else

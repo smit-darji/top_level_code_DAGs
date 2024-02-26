@@ -40,10 +40,13 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Print File Names
+      - name: Validate top level code
         env:
           addedfiles: ${{ needs.addedFilesList.outputs.addedfiles }}
         run: |
           added_files_str="${{ env.addedfiles }}"
           python analyze_dags.py $added_files_str >> analyze_result.txt
+          cat analyze_result.txt
+      - name: Result list
+        run: |
           cat analyze_result.txt

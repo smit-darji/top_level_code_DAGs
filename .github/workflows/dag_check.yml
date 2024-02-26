@@ -25,7 +25,8 @@ jobs:
           echo "changedfiles=$changed_files" >> $GITHUB_ENV
       
       - name: Print files to be validated
-        run: echo "Files to be validated: ${{ steps.set-changed-files.outputs.changedfiles }}"
+        run: |
+          echo "Files to be validated: ${{ steps.set-changed-files.outputs.changedfiles }}"
 
   analyze_dag_files:
     runs-on: ubuntu-latest

@@ -44,16 +44,20 @@ jobs:
         env:
           addedfiles: ${{ needs.addedFilesList.outputs.addedfiles }}
         run: |
-          echo "start"
-          echo $addedfiles
           added_files_str="${{ env.addedfiles }}"
-          echo $added_files_str
-          echo "****************"
           files=($added_files_str)
-          echo "=================================================="
-          echo $files
-
           for file in "${files[@]}"; do
             echo "Processing file: $file"
             python analyze_dags.py "$file"
           done
+  
+  result_of_pythonfile:
+    needs: analyze_dag_files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print result of Python file
+        run: |
+          # Add commands to print the result of the Python file processing here
+          # For example:
+          echo "Result of Python file processing:"
+          cat analyze_result.txt  # Assuming the Python script writes the result to a file named analyze_result.txt

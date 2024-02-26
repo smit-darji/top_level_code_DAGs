@@ -1,38 +1,26 @@
-import os
 import ast
+import os
 
-
-def has_top_level_code(file_path):
-    with open(file_path, 'r') as f:
-        code = f.read()
-        try:
-            parsed_ast = ast.parse(code)
-            for node in parsed_ast.body:
-                if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
-                    continue
-                else:
-                    return True
-            return False
-        except SyntaxError:
-            return True
-
-
-def analyze_dag_files(directory):
-    results = []
+def check_top_level_code(directory):
+    files_with_top_level_code = []
     for root, dirs, files in os.walk(directory):
-        for file in files:
-            if file.endswith(".py"):
-                file_path = os.path.join(root, file)
-                if has_top_level_code(file_path):
-                    results.append((file_path, "Contains top-level code"))
-                else:
-                    results.append((file_path, "Does not contain top-level code"))
-    return results
+        for filename in files:
+            if filename.endswith(".py"):
+                file_path = os.path.join(root, filename)
+                with open(file_path, "r") as file:
+                    try:
+                        tree = ast.parse(file.read(), filename=file_path)
+                        for node in tree.body:
+                            if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
+                                files_with_top_level_code.append(filename)
+                                break
+                    except SyntaxError:
+                        print(f"SyntaxError: Unable to parse {filename}")
+    return files_with_top_level_code
 
-
-dag_directory = "top_level_code_DAGs/dags"
-results = analyze_dag_files(dag_directory)
-for file_path, result in results:
-    print(f"File: {file_path}")
-    print(result)
-    print()
+# Example usage:
+directory = "dags"
+files_with_top_level_code = check_top_level_code(directory)
+print("Files with top-level code:")
+for file in files_with_top_level_code:
+    print(file)

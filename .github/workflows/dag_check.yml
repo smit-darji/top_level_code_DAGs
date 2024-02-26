@@ -5,7 +5,6 @@ on:
     branches:
       - Master
 
-
 jobs:
   analyze_dag_files:
     runs-on: ubuntu-latest
@@ -21,7 +20,7 @@ jobs:
 
     - name: Analyze DAG Files
       run: |
-        python analyze_dags.py
+        python analyze_dags.py > analyze_output.txt
       working-directory: ${{ github.workspace }}
       id: analyze
 
@@ -29,5 +28,14 @@ jobs:
     needs: analyze_dag_files
     runs-on: ubuntu-latest
     steps:
+    - name: Read Analysis Output
+      id: read_analysis_output
+      run: echo "::set-output name=analysis_output::$(cat analyze_output.txt)"
+
     - name: Display Results
-      run: echo "${{ steps.analyze.outputs.stdout }}"
+      run: |
+        echo "Files without top-level code:"
+        grep "Files without top-level code:" <<< "${{ steps.read_analysis_output.outputs.analysis_output }}"
+        echo ""
+        echo "Files with top-level code:"
+        grep "Files with top-level code:" <<< "${{ steps.read_analysis_output.outputs.analysis_output }}"

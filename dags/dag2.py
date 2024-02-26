@@ -1,11 +1,12 @@
 from datetime import datetime
 from airflow import DAG
-from airflow.operators.dummy_operator import DummyOperator
+from airflow.operators.dummy_operator import DummyOperator, DummyOperator
 
 default_args = {
     'owner': 'airflow',
     'start_date': datetime(2023, 1, 1),
 }
+
 
 dag = DAG(
     'dag2',

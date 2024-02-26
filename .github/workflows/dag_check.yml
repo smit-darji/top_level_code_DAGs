@@ -4,7 +4,6 @@ on:
   pull_request:
     branches:
       - Master
-
 jobs:
   analyze_dag_files:
     runs-on: ubuntu-latest
@@ -21,7 +20,7 @@ jobs:
     - name: Analyze DAG Files
       id: analyze
       run: |
-        python analyze_dags.py >> $GITHUB_ENV
+        python analyze_dags.py >> analyze_output.txt
 
   display_results:
     needs: analyze_dag_files
@@ -29,5 +28,8 @@ jobs:
     steps:
     - name: Display Results
       run: |
-        echo "Files with top-level code:"
-        cat $GITHUB_ENV | grep -E "dags\/.*\.py$"
+        echo "Valid files with top-level code:"
+        grep "Valid files with top-level code:" analyze_output.txt -A 100 | tail -n +2
+        echo ""
+        echo "Invalid files:"
+        grep "Invalid files:" analyze_output.txt -A 100 | tail -n +2

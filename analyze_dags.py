@@ -2,7 +2,8 @@ import ast
 import os
 
 def check_top_level_code(directory):
-    files_with_top_level_code = []
+    valid_files = []
+    invalid_files = []
     for root, dirs, files in os.walk(directory):
         for filename in files:
             if filename.endswith(".py"):
@@ -10,19 +11,26 @@ def check_top_level_code(directory):
                 with open(file_path, "r") as file:
                     try:
                         tree = ast.parse(file.read(), filename=file_path)
-                        for node in tree.body:
-                            if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
-                                files_with_top_level_code.append(filename)
-                                break
+                        has_top_level_code = any(isinstance(node, (ast.FunctionDef, ast.ClassDef)) for node in tree.body)
+                        if has_top_level_code:
+                            valid_files.append(filename)
+                        else:
+                            invalid_files.append(filename)
                     except SyntaxError:
+                        invalid_files.append(filename)
                         print(f"SyntaxError: Unable to parse {filename}")
-    return files_with_top_level_code
+    return valid_files, invalid_files
 
 
 # Example usage:
 directory = "dags"
-files_with_top_level_code = check_top_level_code(directory)
+valid_files, invalid_files = check_top_level_code(directory)
 
-# Print each filename on a new line
-for file in files_with_top_level_code:
+# Print valid and invalid filenames
+print("Valid files with top-level code:")
+for file in valid_files:
+    print(file)
+
+print("\nInvalid files:")
+for file in invalid_files:
     print(file)

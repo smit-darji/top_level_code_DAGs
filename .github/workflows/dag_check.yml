@@ -19,8 +19,8 @@ jobs:
         python dag_check_script.py
 
     - name: Set Check Result
-      if: ${{ always() }}
-      run: echo "::set-output name=dag_has_top_level_code::${{ steps.dag_check.outputs.has_top_level_code }}"
+      id: set_result
+      run: echo "::set-output name=dag_has_top_level_code::$(cat dag_check_result.txt)"
 
   report_results:
     needs: check_dags
@@ -30,9 +30,8 @@ jobs:
     - name: Display Results
       if: ${{ needs.check_dags.result == 'success' }}
       run: |
-        if [ "${{ needs.check_dags.outputs.dag_has_top_level_code }}" = "true" ]; then
+        if [ "${{ steps.set_result.outputs.dag_has_top_level_code }}" = "true" ]; then
           echo "Top-level code found in DAGs folder."
         else
           echo "No top-level code found in DAGs folder."
         fi
-

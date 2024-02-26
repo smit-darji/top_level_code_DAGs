@@ -34,8 +34,13 @@ jobs:
 
     - name: Display Results
       run: |
-        echo "Files without top-level code:"
-        grep "Files without top-level code:" <<< "${{ steps.read_analysis_output.outputs.analysis_output }}"
-        echo ""
-        echo "Files with top-level code:"
-        grep "Files with top-level code:" <<< "${{ steps.read_analysis_output.outputs.analysis_output }}"
+        analysis_output="${{ steps.read_analysis_output.outputs.analysis_output }}"
+        if [ -z "$analysis_output" ]; then
+          echo "No files found."
+        else
+          echo "Files without top-level code:"
+          grep "Files without top-level code:" <<< "$analysis_output"
+          echo ""
+          echo "Files with top-level code:"
+          grep "Files with top-level code:" <<< "$analysis_output"
+        fi

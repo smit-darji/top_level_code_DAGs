@@ -1,6 +1,6 @@
 from datetime import datetime
 from airflow import DAG
-from airflow.operators.dummy_operator import DummyOperator, DummyOperator
+from airflow.operators.dummy_operator import DummyOperator
 
 default_args = {
     'owner': 'airflow',

@@ -21,6 +21,8 @@ jobs:
       id: analyze
       run: |
         python analyze_dags.py >> analyze_output.txt
+        echo "********************"
+        echo analyze_output.txt
 
   display_results:
     needs: analyze_dag_files

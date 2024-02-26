@@ -17,18 +17,3 @@ def check_top_level_code(files):
             invalid_files.append(file_path)
             print(f"SyntaxError: Unable to parse {file_path}")
     return valid_files, invalid_files
-
-# Example usage:
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python analyze_dags.py")
-        sys.exit(1)
-
-    files = sys.argv[1:]
-    valid_files, invalid_files = check_top_level_code(files)
-
-    # Print valid and invalid filenames
-    print("Valid files without top-level code:")
-    print(valid_files)
-    print("\nInvalid files with top-level code:")
-    print(invalid_files)

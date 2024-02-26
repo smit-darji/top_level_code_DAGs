@@ -7,22 +7,20 @@ on:
 
 
 jobs:
-  changedFilesList:
+  changedFilesList: # Job that list changed files
     runs-on: ubuntu-latest
     outputs:
-      changedfiles: ${{ steps.set-changed-files.outputs.changedfiles }}
+      changedfiles: ${{ steps.set-changed-files.outputs.changedfiles }} # generate output names changedfiles by using inner step output
     steps:
-      - name: Clone Repository
-        uses: actions/checkout@v2
+      - name: Clone Repo
+        uses: actions/checkout@v4
 
       - name: Get main branch
         run: git fetch --no-tags --prune --depth=1 origin +refs/heads/${{ github.event.pull_request.base.ref }}:refs/remotes/origin/${{ github.event.pull_request.base.ref }}
       
       - name: Get list of changed files
         id: set-changed-files
-        run: |
-          changed_files=$(git diff --name-only --diff-filter=ACRT origin/${{ github.event.pull_request.base.ref }} HEAD | uniq | jq -R -s -c 'split("\n")[:-1]' | jq -r '.[] | ("./" + .)')
-          
+        run: echo changedfiles=$(git diff --name-only --diff-filter=ACRT origin/${{ github.event.pull_request.base.ref }} HEAD | uniq  | jq -R -s -c 'split("\n")[:-1]' | jq -r '.[] | ("./" + .)') >>$GITHUB_OUTPUT
       
       - name: Print files to be validated
         run: |
@@ -45,8 +43,8 @@ jobs:
 
       - name: Print File Names
         run: |
-          changed_files="${{ env.changedfiles }}"
-          IFS=' ' read -ra files <<< "$changed_files"
+          added_files="${{ env.added_files }}"
+          IFS=' ' read -ra files <<< "$added_files"
           for file in "${files[@]}"; do
             echo "Processing file: $file"
             python analyze_dags.py "$file"

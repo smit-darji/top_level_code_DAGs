@@ -45,10 +45,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install tabulate
 
-      - name: print a file
-        run: |
-          python print.py
-
       - name: Validate top level code
         env:
           addedfiles: ${{ needs.addedFilesList.outputs.addedfiles }}

@@ -40,6 +40,9 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: print a file
+        run: |
+          python a.py
       - name: Validate top level code
         env:
           addedfiles: ${{ needs.addedFilesList.outputs.addedfiles }}

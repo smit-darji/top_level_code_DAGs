@@ -16,6 +16,21 @@ def check_top_level_code(file_path):
             top_level_found = False
 
             for node in tree.body:
+                # Ignore default_args dictionary
+                if isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name) and node.targets[0].id == 'default_args':
+                    continue
+
+                # Ignore DAG creation with specified default_args
+                if (isinstance(node, ast.Assign)
+                        and len(node.targets) == 1
+                        and isinstance(node.targets[0], ast.Name)
+                        and node.targets[0].id == 'dag'
+                        and isinstance(node.value, ast.Call)
+                        and isinstance(node.value.func, ast.Name)
+                        and node.value.func.id == 'DAG'
+                        and any(isinstance(kw, ast.keyword) and kw.arg == 'default_args' for kw in node.value.keywords)):
+                    continue
+
                 if not top_level_found and not isinstance(node, (ast.FunctionDef, ast.ClassDef, ast.Import, ast.ImportFrom, ast.With)):
                     if not (isinstance(node, ast.Expr)
                             and isinstance(node.value, ast.Call)
@@ -32,8 +47,10 @@ def check_top_level_code(file_path):
     return results
 
 
+
+
 if __name__ == "__main__":
-    files = sys.argv[1:]
+    files = ["dags/dag1.py", "dags/fail.py"]
     
     # Check top-level code in each script
     results = []
